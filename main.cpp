@@ -1,9 +1,11 @@
 #include <stdlib.h>
 #include <cassert>
+#include <string>
 #include "Utility/timer.cpp"
 #include "DivideAndConquer.cpp"
 
 //------------------------Utility Function--------------------------------------
+
 template < typename T>
 std::ostream& operator << (std::ostream& os, const std::vector<T>& v) {
     os << "[";
@@ -11,40 +13,59 @@ std::ostream& operator << (std::ostream& os, const std::vector<T>& v) {
         os << it << ", ";
     os << "]";
 }
-#include <algorithm>
-bool isSorted(std::vector<int> v) {
-    std::vector<int> sv(v);
-    std::sort(sv.begin(), sv.end());
-
-    std::vector<int>::iterator i = sv.begin();
-    std::vector<int>::iterator j = v.begin();
-
-    do {
-        if(*i != *j)
-            return false;
-        i++;j++;
-    } while(i == sv.end());
-    return true;
+template < typename T>
+std::ostream& operator << (std::ostream& os, const std::vector<T>* v) {
+    os << "[";
+    for (T it: *v)
+        os << it << ", ";
+    os << "]";
 }
 
-//------------------------Function Test_ 1 -> Fibonacci Number -----------------
-std::vector<int> f_divide_T1(int n) {return std::vector<int>{n-1, n-2};}
-bool f_baseCaseTest_T1(int n) {return n<=2;}
-int f_baseCaseSolution_T1(int n) {return 1;}
-int f_conquer_T1(std::vector<int> &vect) {
+template<typename inpT, typename outT>
+void take_mesurement(DivideAndConquer<inpT, outT> test, inpT toCompute, int designType, std::vector<int> numOfThread, outT expectedResult, bool verbose = true) {
+    outT result = take_mesurement(test, toCompute, designType, numOfThread, verbose);
+    assert(result == expectedResult);
+}
+template<typename inpT, typename outT>
+void take_mesurement(DivideAndConquer<inpT, outT> test, inpT toCompute, int designType, int numOfThread, outT expectedResult, bool verbose = true) {
+    test.setnumOfThread(numOfThread);
+    take_mesurement(test, toCompute, designType, test.getnumOfThread(), expectedResult, verbose);
+}
+template<typename inpT, typename outT>
+outT take_mesurement(DivideAndConquer<inpT, outT> test, inpT toCompute, int designType, int numOfThread, bool verbose = true) {
+    test.setnumOfThread(numOfThread);
+    return take_mesurement(test, toCompute, designType, test.getnumOfThread(), verbose);
+}
+template<typename inpT, typename outT>
+outT take_mesurement(DivideAndConquer<inpT, outT> test, inpT toCompute, int designType, std::vector<int> numOfThread, bool verbose = true) {
+    test.setnumOfThread(numOfThread);
+    tic();
+    outT result = test.compute(toCompute, designType);
+    std::string time_ = toc(false);
+    if(verbose)
+        std::cout << "Divide&Conquer has been run with the value " << toCompute << " end the result is: " << result << ".\n\t";
+    std::cout << time_ << " with " << test.getnumOfThread() << " thread." << std::endl;
+    return result;
+}
+
+//------------------------Function Test Fibonacci Number -----------------------
+std::vector<int> f_divide_F(int n) {return std::vector<int>{n-1, n-2};}
+bool f_baseCaseTest_F(int n) {return n<=2;}
+int f_baseCaseSolution_F(int n) {return 1;}
+int f_conquer_F(std::vector<int> &vect) {
     int n1 = vect.back(); vect.pop_back();
     int n2 = vect.back(); vect.pop_back();
     return n1+n2;}
 
-//------------------------Function Test_ 2 -> Merge Sort -----------------------
-std::vector<std::vector<int>*> f_divide_T2(std::vector<int>* vect) {
+//------------------------Function Test Merge Sort -----------------------------
+std::vector<std::vector<int>*> f_divide_M(std::vector<int>* vect) {
     int offset = vect->size()/2;
     return std::vector<std::vector<int>*>{new std::vector<int>(vect->begin(), vect->begin()+offset), new std::vector<int>(vect->begin()+offset, vect->end())};
 }
-bool f_baseCaseTest_T2(std::vector<int>* vect) {
+bool f_baseCaseTest_M(std::vector<int>* vect) {
     return vect->size() <= 2;
 }
-std::vector<int>* f_baseCaseSolution_T2(std::vector<int>* vect){
+std::vector<int>* f_baseCaseSolution_M(std::vector<int>* vect){
     #define valueIn (*vect)
     if(vect->size() == 1)
         return vect;
@@ -55,7 +76,7 @@ std::vector<int>* f_baseCaseSolution_T2(std::vector<int>* vect){
     }
     return vect;
 }
-std::vector<int>* f_conquer_T2(std::vector<std::vector<int>*> &vect){
+std::vector<int>* f_conquer_M(std::vector<std::vector<int>*> &vect){
     std::vector<int>* result = new std::vector<int>();
 
     std::vector<int>* vect1 = vect.back(); vect.pop_back();
@@ -83,86 +104,141 @@ std::vector<int>* f_conquer_T2(std::vector<std::vector<int>*> &vect){
     return result;
 }
 
-//------------------------Function Test_ 3 -> Quick Sort -----------------------
-// std::vector<std::vector<int>*> f_divide_T2(std::vector<int>* vect) {}
-// bool f_baseCaseTest_T2(std::vector<int>* vect) {}
-// std::vector<int>* f_baseCaseSolution_T2(std::vector<int>* vect){}
-// std::vector<int>* f_conquer_T2(std::vector<std::vector<int>*> &vect){}
-
-template<typename inpT, typename outT>
-void take_mesurement(DivideAndConquer<inpT, outT> test, inpT toCompute, int numOfThread, outT expectedResult, bool verbose = true) {
-    outT result = take_mesurement(test, toCompute, numOfThread, verbose);
-    assert(result == expectedResult);
-}
-template<typename inpT, typename outT>
-outT take_mesurement(DivideAndConquer<inpT, outT> test, inpT toCompute, int numOfThread, bool verbose = true) {
-    test.setnumOfThread(numOfThread);
-    tic();
-    outT result = test.compute(toCompute);
-    std::string time_ = toc(false);
-    if(verbose)
-        std::cout << "Divide&Conquer has been run with the value " << toCompute << " end the result is: " << result << ".\n\t";
-    std::cout << time_ << " with " << numOfThread << " thread." << std::endl;
-    return result;
-}
+//------------------------Function Test Quick Sort -----------------------------
+// std::vector<std::vector<int>*> f_divide_Q(std::vector<int>* vect) {}
+// bool f_baseCaseTest_Q(std::vector<int>* vect) {}
+// std::vector<int>* f_baseCaseSolution_Q(std::vector<int>* vect){}
+// std::vector<int>* f_conquer_Q(std::vector<std::vector<int>*> &vect){}
 
 int main(int argc, char * argv[]) {
     srand (time(NULL));
-    int type, nThread, inputOfTest;
-    if(argc == 2) {//controllo args
-        type = std::stoi(argv[1]);
-        nThread = 1;
-        inputOfTest = 0;
+    std::string type;
+    int designType, inputOfTest;
+    std::vector<int> nThread(3, 0);
+    if(argc < 4 || argc > 9) {
+        std::cout << "Parameters: TypeTest, designType, inputOfTest, [numOfThread]" << std::endl;
+        std::cout << "\tTypeTest: F = Fibonacci o M = Merge con la possibilita di aggiungere T = Test(es. MT)" << std::endl;
+        std::cout << "\tDesignType:\n\t\t 0 = Sequenziale \n\t\t 1 = DivideSeq->FarmSolve->CombineSeq\n\t\t 2 = Pipeline(FarmDivide,FarmBaseSolution,FarmCombine)," << std::endl;
+        std::cout << "\tinputOfTest: Dato in input per il relativo test (n° Fibonacci, N di Elementi del vettore)" << std::endl;
+        std::cout << "\tnumOfThread: numero di thread da utilizzare durante l'esecuzione o array contenente i thread per ogni stato della pipeline esattamente uguale a questo [ n1 n2 n3 ]," << std::endl;
+        return 1;
     } else {
-        if(argc == 3) {
-            type = std::stoi(argv[1]);
-            nThread = std::stoi(argv[2]);
-            inputOfTest = 0;
-        } else {
-            if(argc == 4) {
-                type = std::stoi(argv[1]);
-                nThread = std::stoi(argv[2]);
-                inputOfTest = std::stoi(argv[3]);
-            } else {
-                std::cout << "Parameters: TypeTest, [numOfThread], [inputOfTest]" << std::endl;
-                std::cout << "\tTypeTest: 1 = Fibonacci o 2 = Merge o 3 = Quick," << std::endl;
-                std::cout << "\tnumOfThread: numero di thread da utilizzare durante l'esecuzione," << std::endl;
-                std::cout << "\tinputOfTest: Dato in input per il relativo test (n° Fibonacci, N di Elementi del vettore)" << std::endl;
-                return 1;
+        type = argv[1];
+        designType = std::stoi(argv[2]);
+        inputOfTest = std::stoi(argv[3]);
+        std::string check;
+        if(argc == 4)
+            check = "1";
+        else
+            check = argv[4];
+        int i = 0;
+
+        if(check.compare("[") == 0) {
+            do {
+                check = argv[5+i];
+                if(check.compare("]") != 0)
+                    nThread[i] = std::stoi(check);
+                else break;
+                if(++i > 3)
+                    break;
+            } while(true);
+        } else
+            nThread[0] = std::stoi(check);
+    }
+
+    if(type.compare("F") == 0 || type.compare("FT") == 0) {// Fibonacci number
+        DivideAndConquer<int, int> test1(f_divide_F, f_baseCaseTest_F, f_baseCaseSolution_F, f_conquer_F);
+        inputOfTest = inputOfTest == 0?rand() % 20:inputOfTest;
+        if(type.compare("F") == 0) {
+            if(designType != 0)
+                take_mesurement(test1, inputOfTest, designType, nThread);
+            else {
+                tic();
+                int result = DivideAndConquer<int, int>::solve(inputOfTest, f_divide_F, f_baseCaseTest_F, f_baseCaseSolution_F, f_conquer_F);
+                std::string time_ = toc(false);
+                std::cout << time_ << " with " << nThread << " thread." << std::endl;
             }
+            return 0;
         }
+        //tutti i casi di test
+        if(designType == 1) {
+            take_mesurement(test1, inputOfTest, designType, 1, false);
+            take_mesurement(test1, inputOfTest, designType, 2, false);
+        }
+        take_mesurement(test1, inputOfTest, designType, 3, false);
+        take_mesurement(test1, inputOfTest, designType, 4, false);
+        take_mesurement(test1, inputOfTest, designType, 5, false);
+        take_mesurement(test1, inputOfTest, designType, 6, false);
+        take_mesurement(test1, inputOfTest, designType, 7, false);
+        take_mesurement(test1, inputOfTest, designType, 8, false);
+        take_mesurement(test1, inputOfTest, designType, 9, false);
+        take_mesurement(test1, inputOfTest, designType, 10, false);
+        take_mesurement(test1, inputOfTest, designType, 20, false);
+        take_mesurement(test1, inputOfTest, designType, 30, false);
+        take_mesurement(test1, inputOfTest, designType, 40, false);
+        take_mesurement(test1, inputOfTest, designType, 50, false);
+        take_mesurement(test1, inputOfTest, designType, 100, false);
+        take_mesurement(test1, inputOfTest, designType, 150, false);
+        take_mesurement(test1, inputOfTest, designType, 200, false);
+        take_mesurement(test1, inputOfTest, designType, 250, false);
+
+        // take_mesurement(test1, inputOfTest, designType, 2, false);
+        // take_mesurement(test1, inputOfTest, designType, 4, false);
+        // take_mesurement(test1, inputOfTest, designType, 8, false);
+        // take_mesurement(test1, inputOfTest, designType, 16, false);
+        // take_mesurement(test1, inputOfTest, designType, 32, false);
+        // take_mesurement(test1, inputOfTest, designType, 64, false);
+        // take_mesurement(test1, inputOfTest, designType, 128, false);
+        // take_mesurement(test1, inputOfTest, designType, 256, false);
     }
 
-    // if(type == 1) {// Fibonacci number
-    //     DivideAndConquer<int, int> test1(f_divide_T1, f_baseCaseTest_T1, f_baseCaseSolution_T1, f_conquer_T1);
-    //     if(inputOfTest == 0)
-    //         take_mesurement(test1, rand() % 20, nThread);
-    //     else
-    //         take_mesurement(test1, inputOfTest, nThread);
-    // }
+    if(type.compare("M") == 0 || type.compare("MT") == 0) {//Merge Sort
+        DivideAndConquer<std::vector<int>*, std::vector<int>*> test2(f_divide_M, f_baseCaseTest_M, f_baseCaseSolution_M, f_conquer_M);
 
-    if(type == 2) {//Merge Sort
-        DivideAndConquer<std::vector<int>*, std::vector<int>*> test2(f_divide_T2, f_baseCaseTest_T2, f_baseCaseSolution_T2, f_conquer_T2);
         std::vector<int>* vectTest = new std::vector<int>(inputOfTest == 0?1000000:inputOfTest);
-        for(int i = vectTest->size(); i!=0; i--)
-            (*vectTest)[i] = rand() % 1000000;
-        std::vector<int>* result = take_mesurement(test2, vectTest, nThread, false);
-        std::cout << isSorted(*result) << (vectTest->size()==result->size()) << true << std::endl;
-    }
+        for(int i = vectTest->size(); i!=0; i--) (*vectTest)[i] = rand() % 100000;
 
-    // Take Mesurement
-    // take_mesurement(test1, 4, 1, 3);
-    // take_mesurement(test1, 6, 2, 8);
-    // take_mesurement(test1, 8, 1, 21);
-    // take_mesurement(test1, 10, 2, 55);
-    // take_mesurement(test1, 12, 6, 144);
-    //
-    // take_mesurement(test2, vectTest, 1);
-    // take_mesurement(test2, vectTest, 2);
-    // take_mesurement(test2, vectTest, 4);
-    // take_mesurement(test2, vectTest, 8);
-    // take_mesurement(test2, vectTest, 16);
-    // take_mesurement(test2, vectTest, 32);
-    // take_mesurement(test2, vectTest, 64);
-    // take_mesurement(test2, vectTest, 128);
+        if(type.compare("M") == 0) {
+            if(designType != 0)
+                std::vector<int>* result = take_mesurement(test2, vectTest, designType, nThread, false);
+            else {
+                tic();
+                std::vector<int>* result = DivideAndConquer<std::vector<int>*, std::vector<int>*>::solve(vectTest, f_divide_M, f_baseCaseTest_M, f_baseCaseSolution_M, f_conquer_M);
+                std::string time_ = toc(false);
+                std::cout << time_ << " with " << nThread << " thread." << std::endl;
+            }
+            return 0;
+        }
+        //tutti i casi di test
+        if(designType == 1) {
+            take_mesurement(test2, vectTest, designType, 1, false);
+            take_mesurement(test2, vectTest, designType, 2, false);
+        }
+        take_mesurement(test2, vectTest, designType, 3, false);
+        take_mesurement(test2, vectTest, designType, 4, false);
+        take_mesurement(test2, vectTest, designType, 5, false);
+        take_mesurement(test2, vectTest, designType, 6, false);
+        take_mesurement(test2, vectTest, designType, 7, false);
+        take_mesurement(test2, vectTest, designType, 8, false);
+        take_mesurement(test2, vectTest, designType, 9, false);
+        take_mesurement(test2, vectTest, designType, 10, false);
+        take_mesurement(test2, vectTest, designType, 20, false);
+        take_mesurement(test2, vectTest, designType, 30, false);
+        take_mesurement(test2, vectTest, designType, 40, false);
+        take_mesurement(test2, vectTest, designType, 50, false);
+        take_mesurement(test2, vectTest, designType, 100, false);
+        take_mesurement(test2, vectTest, designType, 150, false);
+        take_mesurement(test2, vectTest, designType, 200, false);
+        take_mesurement(test2, vectTest, designType, 250, false);
+
+        // take_mesurement(test2, vectTest, designType, 2, false);
+        // take_mesurement(test2, vectTest, designType, 4, false);
+        // take_mesurement(test2, vectTest, designType, 8, false);
+        // take_mesurement(test2, vectTest, designType, 16, false);
+        // take_mesurement(test2, vectTest, designType, 32, false);
+        // take_mesurement(test2, vectTest, designType, 64, false);
+        // take_mesurement(test2, vectTest, designType, 128, false);
+        // take_mesurement(test2, vectTest, designType, 256, false);
+
+    }
 }

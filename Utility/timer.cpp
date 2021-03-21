@@ -14,11 +14,7 @@ std::string toc(bool verbose = true) {
     auto elapsed = std::chrono::high_resolution_clock::now() - start;
     unsigned long long  nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
     std::string time_ = "";
-        int temp = (int) (nsec / 604800000000000.0);nsec %= 604800000000000;
-        if (temp != 0) time_ += std::to_string(temp) + "week ";
-        temp = (int) (nsec / 86400000000000.0); nsec %= 86400000000000;
-        if (temp != 0) time_ += std::to_string(temp) + "day ";
-        temp = (int) (nsec / 3600000000000.0); nsec %= 3600000000000;
+        int temp = (int) (nsec / 3600000000000.0); nsec %= 3600000000000;
         if (temp != 0) time_ += std::to_string(temp) + "h ";
         temp = (int) (nsec / 60000000000.0); nsec %= 60000000000;
         if (temp != 0) time_ += std::to_string(temp) + "min ";
@@ -26,9 +22,8 @@ std::string toc(bool verbose = true) {
         if (temp != 0) time_ += std::to_string(temp) + "s ";
         temp = (int) (nsec / 1000000.0); nsec %= 1000000;
         if (temp != 0) time_ += std::to_string(temp) + "ms ";
-        temp = (int) (nsec / 1000.0); nsec %= 1000;
+        temp = (int) (nsec / 1000.0);
         if (temp != 0) time_ += std::to_string(temp) + "us ";
-        if (nsec != 0) time_ += std::to_string(nsec) + "ns";
     time_ = "Elapsed time: " + time_;
     if(verbose)
         std::cout << time_ << std::endl;

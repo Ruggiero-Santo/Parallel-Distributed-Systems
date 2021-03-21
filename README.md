@@ -10,7 +10,10 @@ The implemented code gives the possibility to execute in parallel, with a custom
 
 Thanks to the use of templates, functions can handle any type in both input and output (must be consistent between functions).
 
+The implemented solution although very general makes a basic assumption that the aggregation function respects the commutative property. This can be a problem when used when the order of aggregation is important.
+
 :warning: WARNING
 ```diff
-- If you want to test the code make sure you have enough physical cores otherwise the high number of threads will only produce hoverheads.
+- If you want to test the code make sure you have enough physical cores 
+- otherwise the high number of threads will only produce hoverheads.
 ```
